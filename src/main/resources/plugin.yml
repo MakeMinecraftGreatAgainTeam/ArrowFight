@@ -1,0 +1,9 @@
+name: ArrowFight
+version: '${project.version}'
+main: org.mmga.mycraft.arrowfight.ArrowFightPlugin
+api-version: 1.16
+authors: [ MakeMinecraftGreatAgainTeam ]
+description: an arrow fight plugin for mycraft server
+depend:
+  - Multiverse-Core
+website: http://wzpmc.cn:4000/wzp/ArrowFight
