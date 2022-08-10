@@ -12,7 +12,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.mmga.mycraft.arrowfight.commands.ArrowFightCommand;
 import org.mmga.mycraft.arrowfight.entities.GameObject;
 import org.mmga.mycraft.arrowfight.entities.MapObject;
-import org.mmga.mycraft.arrowfight.events.OnTick;
+import org.mmga.mycraft.arrowfight.events.*;
 import org.slf4j.Logger;
 
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -43,6 +43,13 @@ public final class ArrowFightPlugin extends JavaPlugin {
             disableMe();
             return;
         }
+        Server server = this.getServer();
+        PluginManager pluginManager = server.getPluginManager();
+        pluginManager.registerEvents(new EntityDamage(), this);
+        pluginManager.registerEvents(new PlayerLeave(), this);
+        pluginManager.registerEvents(new PlayerJoin(), this);
+        pluginManager.registerEvents(new PlayerDeath(), this);
+        pluginManager.registerEvents(new BreakBlock(), this);
         ArrowFightCommand arrowFightCommand = new ArrowFightCommand();
         af.setExecutor(arrowFightCommand);
         af.setTabCompleter(arrowFightCommand);
