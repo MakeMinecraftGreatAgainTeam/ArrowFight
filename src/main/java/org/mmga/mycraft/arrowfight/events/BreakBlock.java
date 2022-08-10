@@ -28,19 +28,21 @@ public class BreakBlock implements Listener {
         if (MapObject.PLAYERS.containsKey(player)) {
             Block block = event.getBlock();
             Material type = block.getType();
-            if (Material.IRON_ORE.equals(type)) {
-                event.setDropItems(false);
-                Location location = block.getLocation();
-                World world = location.getWorld();
-                Item entity = (Item) world.spawnEntity(location, EntityType.DROPPED_ITEM);
-                entity.setItemStack(new ItemStack(Material.IRON_INGOT, new Random().nextInt(3) + 1));
-            }
-            if (Material.GOLD_ORE.equals(type)) {
-                event.setDropItems(false);
-                Location location = block.getLocation();
-                World world = location.getWorld();
-                Item entity = (Item) world.spawnEntity(location, EntityType.DROPPED_ITEM);
-                entity.setItemStack(new ItemStack(Material.GOLD_INGOT, new Random().nextInt(2) + 1));
+            if (event.isDropItems()) {
+                if (Material.IRON_ORE.equals(type)) {
+                    event.setDropItems(false);
+                    Location location = block.getLocation();
+                    World world = location.getWorld();
+                    Item entity = (Item) world.spawnEntity(location, EntityType.DROPPED_ITEM);
+                    entity.setItemStack(new ItemStack(Material.IRON_INGOT, new Random().nextInt(3) + 1));
+                }
+                if (Material.GOLD_ORE.equals(type)) {
+                    event.setDropItems(false);
+                    Location location = block.getLocation();
+                    World world = location.getWorld();
+                    Item entity = (Item) world.spawnEntity(location, EntityType.DROPPED_ITEM);
+                    entity.setItemStack(new ItemStack(Material.GOLD_INGOT, new Random().nextInt(2) + 1));
+                }
             }
         }
     }

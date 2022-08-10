@@ -76,7 +76,7 @@ public class GameObject {
         player.teleport(lobbyLoc);
         player.setHealth(20.0);
         player.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 99999999, 255));
-        if ((this.mapObject.getMax() - min) >= size) {
+        if ((this.mapObject.getMax() - min) <= size) {
             tick = (20 * 75) - 1;
         }
         player.getInventory().clear();

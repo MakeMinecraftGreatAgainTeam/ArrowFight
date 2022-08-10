@@ -42,8 +42,10 @@ public class EntityDamage implements Listener {
                 if (effectType != null) {
                     new RemovePlayerPotionEffect(player, effectType).runTaskLater(JavaPlugin.getPlugin(ArrowFightPlugin.class), 2);
                 }
-
             }
+        }
+        if (EntityType.PLAYER.equals(type) && EntityType.PLAYER.equals(damagerType)) {
+            event.setCancelled(true);
         }
     }
 }
