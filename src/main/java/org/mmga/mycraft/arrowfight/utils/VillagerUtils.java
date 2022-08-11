@@ -33,16 +33,18 @@ public class VillagerUtils {
     private static final List<MerchantRecipe> MERCHANT_RECIPES = new ArrayList<>();
 
     static {
-        IRON_ARROW.addIngredient(new ItemStack(IRON_INGOT, 1));
+        IRON_ARROW.addIngredient(new ItemStack(COBBLESTONE, 1));
         MERCHANT_RECIPES.add(IRON_ARROW);
         addItem(INVISIBILITY, 3, RED + "TNT箭矢", REDSTONE, 12, RED + "会在射到的地方生成一个TNT");
-        addItem(INVISIBILITY, true, false, 1, RED + "TNT雨箭矢", REDSTONE, 16, RED + "会在射到的地方生成一场TNT雨");
+        addItem(INVISIBILITY, true, false, 1, RED + "TNT雨箭矢", REDSTONE, 20, RED + "会在射到的地方生成一场TNT雨");
         addItem(POISON, 1, GREEN + "苦力怕箭矢", EMERALD, 3, GREEN + "会在射到的地方生成亿些苦力怕");
         addItem(POISON, true, false, 1, GREEN + "僵尸箭矢", EMERALD, 4, GREEN + "会在射到的地方生成亿些僵尸");
         addItem(FIRE_RESISTANCE, true, false, 1, RED + "火焰箭矢", COAL_BLOCK, 1, RED + "会在射到的地方生成火焰");
         addItem(FIRE_RESISTANCE, 1, RED + "岩浆箭矢", LAVA_BUCKET, 1, RED + "会在射到的地方生成岩浆");
         addItem(LUCK, 3, RED + "世界吞噬者", COBBLESTONE, 10, RED + "所到之处，寸草不留");
         addItem(SLOW_FALLING, 1, "箭雨箭矢", IRON_BLOCK, 1, "会在射到的地方生成箭雨");
+        addItem(SLOWNESS, 1, "药箭", LAPIS_LAZULI, 4, "会在射到的地方生成滞留型药水（中毒）");
+        addItem(SLOW_FALLING, true, false, 1, "⚡闪电⚡箭", GOLD_INGOT, 4, "会在射到的地方生成⚡闪电⚡");
     }
 
     public static void initVillager(Villager villager) {

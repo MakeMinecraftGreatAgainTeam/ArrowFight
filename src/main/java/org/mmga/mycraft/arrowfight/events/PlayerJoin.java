@@ -20,6 +20,7 @@ import java.util.Map;
  */
 public class PlayerJoin implements Listener {
     public static final Map<String, Player> PLAYERS = new HashMap<>();
+    public static final Map<String, GameObject.GameTeam> TEAMS = new HashMap<>();
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
@@ -36,8 +37,8 @@ public class PlayerJoin implements Listener {
                 players.remove(oldP);
                 players.add(player);
                 Map<Player, GameObject.GameTeam> teamPlayers = gameObject.getTeamPlayers();
-                teamPlayers.put(player, teamPlayers.get(oldP));
-                teamPlayers.remove(oldP);
+                teamPlayers.put(player, TEAMS.get(name));
+                TEAMS.remove(name);
                 MapObject.PLAYERS.put(player, gameObject);
                 MapObject.PLAYERS.remove(oldP);
             }

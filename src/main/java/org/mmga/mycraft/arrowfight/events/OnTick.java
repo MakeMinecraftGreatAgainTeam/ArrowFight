@@ -2,6 +2,7 @@ package org.mmga.mycraft.arrowfight.events;
 
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.entity.AreaEffectCloud;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -52,14 +53,14 @@ public class OnTick extends BukkitRunnable {
                         boolean extended = basePotionData.isExtended();
                         boolean upgraded = basePotionData.isUpgraded();
                         Location arrowLocation = byClass.getLocation();
+                        World world = arrowLocation.getWorld();
                         if (PotionType.LUCK.equals(type)) {
                             int blockX = arrowLocation.getBlockX();
                             int blockY = arrowLocation.getBlockY();
                             int blockZ = arrowLocation.getBlockZ();
-                            World world = arrowLocation.getWorld();
-                            for (int x = -1; x <= 1; x++) {
+                            for (int x = -3; x <= 3; x++) {
                                 for (int y = -1; y <= 1; y++) {
-                                    for (int z = -1; z <= 1; z++) {
+                                    for (int z = -3; z <= 3; z++) {
                                         Block block = new Location(world, blockX + x, blockY + y, blockZ + z).getBlock();
                                         Material material = block.getType();
                                         if (!Material.BEDROCK.equals(material)) {
@@ -178,6 +179,13 @@ public class OnTick extends BukkitRunnable {
                                 replaceAir(material, new Location(copyWorld, blockX + 1, blockY, blockZ - 1));
                                 replaceAir(material, new Location(copyWorld, blockX - 1, blockY, blockZ + 1));
                                 replaceAir(material, new Location(copyWorld, blockX - 1, blockY, blockZ - 1));
+                                byClass.remove();
+                            }
+                        }
+                        if (PotionType.SLOWNESS.equals(type)) {
+                            if (byClass.isOnGround()) {
+                                AreaEffectCloud entity = (AreaEffectCloud) world.spawnEntity(arrowLocation, EntityType.AREA_EFFECT_CLOUD);
+                                entity.setBasePotionData(new PotionData(PotionType.POISON, true, false));
                                 byClass.remove();
                             }
                         }

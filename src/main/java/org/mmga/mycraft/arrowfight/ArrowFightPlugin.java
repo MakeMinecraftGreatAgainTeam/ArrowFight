@@ -48,9 +48,9 @@ public final class ArrowFightPlugin extends JavaPlugin {
         pluginManager.registerEvents(new EntityDamage(), this);
         pluginManager.registerEvents(new PlayerLeave(), this);
         pluginManager.registerEvents(new PlayerJoin(), this);
-        pluginManager.registerEvents(new PlayerDeath(), this);
         pluginManager.registerEvents(new BreakBlock(), this);
         pluginManager.registerEvents(new BlockExplode(), this);
+        pluginManager.registerEvents(new PlayerReSpawn(), this);
         ArrowFightCommand arrowFightCommand = new ArrowFightCommand();
         af.setExecutor(arrowFightCommand);
         af.setTabCompleter(arrowFightCommand);

@@ -74,6 +74,7 @@ public class GameObject {
         Location lobbyLoc = this.mapObject.getLobby().clone();
         lobbyLoc.setWorld(copyWorld);
         player.teleport(lobbyLoc);
+        player.setBedSpawnLocation(lobbyLoc);
         player.setHealth(20.0);
         if ((this.mapObject.getMax() - min) <= size) {
             tick = (20 * 75) - 1;
@@ -156,9 +157,11 @@ public class GameObject {
                 if (blue) {
                     name = "BLUE";
                     textColor = NamedTextColor.BLUE;
+                    player.setBedSpawnLocation(mapObject.getBlueSpawn());
                 } else {
                     name = "RED";
                     textColor = NamedTextColor.RED;
+                    player.setBedSpawnLocation(mapObject.getRedSpawn());
                 }
                 Team t = scoreboard.getTeam(name);
                 if (t == null) {

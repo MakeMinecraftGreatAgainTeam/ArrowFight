@@ -6,6 +6,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionData;
@@ -46,6 +47,15 @@ public class EntityDamage implements Listener {
             }
         }
         if (EntityType.PLAYER.equals(type) && EntityType.PLAYER.equals(damagerType)) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onEntityDamage(EntityDamageByBlockEvent event) {
+        Entity entity = event.getEntity();
+        EntityType type = entity.getType();
+        if (EntityType.VILLAGER.equals(type) && entity.getScoreboardTags().contains(GAME_TAG)) {
             event.setCancelled(true);
         }
     }

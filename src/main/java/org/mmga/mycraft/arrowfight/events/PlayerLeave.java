@@ -9,6 +9,7 @@ import org.mmga.mycraft.arrowfight.ArrowFightPlugin;
 import org.mmga.mycraft.arrowfight.entities.GameObject;
 import org.mmga.mycraft.arrowfight.entities.MapObject;
 
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -30,7 +31,10 @@ public class PlayerLeave implements Listener {
                 player.teleport(Objects.requireNonNull(plugin.getConfig().getLocation("lobby")));
                 MapObject.PLAYERS.remove(player);
             } else {
-                gameObject.getTeamPlayers().remove(player);
+                Map<Player, GameObject.GameTeam> teamPlayers = gameObject.getTeamPlayers();
+                GameObject.GameTeam gameTeam = teamPlayers.get(player);
+                PlayerJoin.TEAMS.put(player.getName(), gameTeam);
+                teamPlayers.remove(player);
                 gameObject.leavePlayers.add(player);
                 PlayerJoin.PLAYERS.put(player.getName(), player);
             }
