@@ -1,4 +1,4 @@
-package org.mmga.mycraft.arrowfight.events;
+package org.mmga.mycraft.arrowfight.runnable;
 
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffectType;

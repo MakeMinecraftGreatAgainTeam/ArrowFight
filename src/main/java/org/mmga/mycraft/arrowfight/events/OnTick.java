@@ -9,8 +9,10 @@ import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionType;
 import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.mmga.mycraft.arrowfight.ArrowFightPlugin;
 import org.mmga.mycraft.arrowfight.entities.GameObject;
 import org.mmga.mycraft.arrowfight.entities.MapObject;
+import org.mmga.mycraft.arrowfight.runnable.ArrowRain;
 
 import java.util.Collection;
 import java.util.Map;
@@ -27,28 +29,9 @@ public class OnTick extends BukkitRunnable {
     private static final int TICK_SEC = 20;
     int tick = 0;
 
-    public static void fill(Location location, int x1, int y1, int z1, int x2, int y2, int z2) {
-        World world = location.getWorld();
-        Location location1 = location.add(x1, y1, z1);
-        Location location2 = location.add(x2, y2, z2);
-        fill(world, location1, location2);
-    }
-
-    public static void fill(World world, Location location1, Location location2) {
-        fill(world, location1.getBlockX(), location1.getBlockY(), location1.getBlockZ(), location2.getBlockX(), location2.getBlockY(), location2.getBlockZ());
-    }
-
-    public static void fill(World world, int x1, int y1, int z1, int x2, int y2, int z2) {
-        for (int x = x1; x <= x2; x++) {
-            for (int y = y1; y <= y2; y++) {
-                for (int z = z1; z <= z2; z++) {
-                    Block block = world.getBlockAt(x, y, z);
-                    Material type = block.getType();
-                    if (!Material.BEDROCK.equals(type)) {
-                        block.setType(Material.AIR);
-                    }
-                }
-            }
+    public static void replaceAir(Material block, Location location) {
+        if (location.getBlock().getType().isAir()) {
+            location.getBlock().setType(block);
         }
     }
 
@@ -70,11 +53,21 @@ public class OnTick extends BukkitRunnable {
                         boolean upgraded = basePotionData.isUpgraded();
                         Location arrowLocation = byClass.getLocation();
                         if (PotionType.LUCK.equals(type)) {
-                            fill(arrowLocation, 1, 2, 1, -1, -2, -1);
-                            fill(arrowLocation, 2, 1, 1, 2, -1, -1);
-                            fill(arrowLocation, -2, 1, 1, -2, -1, -1);
-                            fill(arrowLocation, 1, 1, 2, -1, -1, 2);
-                            fill(arrowLocation, 1, 1, -2, -1, -1, -2);
+                            int blockX = arrowLocation.getBlockX();
+                            int blockY = arrowLocation.getBlockY();
+                            int blockZ = arrowLocation.getBlockZ();
+                            World world = arrowLocation.getWorld();
+                            for (int x = -1; x <= 1; x++) {
+                                for (int y = -1; y <= 1; y++) {
+                                    for (int z = -1; z <= 1; z++) {
+                                        Block block = new Location(world, blockX + x, blockY + y, blockZ + z).getBlock();
+                                        Material material = block.getType();
+                                        if (!Material.BEDROCK.equals(material)) {
+                                            block.setType(Material.AIR);
+                                        }
+                                    }
+                                }
+                            }
                             boolean onGround = byClass.isOnGround();
                             if (onGround) {
                                 byClass.remove();
@@ -131,14 +124,14 @@ public class OnTick extends BukkitRunnable {
                                         int blockX = rainMain.getBlockX();
                                         int blockY = rainMain.getBlockY();
                                         int blockZ = rainMain.getBlockZ();
-                                        Location rain1 = new Location(copyWorld, blockX + 1, blockY, blockZ);
-                                        Location rain2 = new Location(copyWorld, blockX - 1, blockY, blockZ);
-                                        Location rain3 = new Location(copyWorld, blockX, blockY, blockZ + 1);
-                                        Location rain4 = new Location(copyWorld, blockX, blockY, blockZ - 1);
-                                        Location rain5 = new Location(copyWorld, blockX + 1, blockY, blockZ + 1);
-                                        Location rain6 = new Location(copyWorld, blockX + 1, blockY, blockZ - 1);
-                                        Location rain7 = new Location(copyWorld, blockX - 1, blockY, blockZ + 1);
-                                        Location rain8 = new Location(copyWorld, blockX - 1, blockY, blockZ - 1);
+                                        Location rain1 = new Location(copyWorld, blockX + 2, blockY, blockZ);
+                                        Location rain2 = new Location(copyWorld, blockX - 2, blockY, blockZ);
+                                        Location rain3 = new Location(copyWorld, blockX, blockY, blockZ + 2);
+                                        Location rain4 = new Location(copyWorld, blockX, blockY, blockZ - 2);
+                                        Location rain5 = new Location(copyWorld, blockX + 2, blockY, blockZ + 2);
+                                        Location rain6 = new Location(copyWorld, blockX + 2, blockY, blockZ - 2);
+                                        Location rain7 = new Location(copyWorld, blockX - 2, blockY, blockZ + 2);
+                                        Location rain8 = new Location(copyWorld, blockX - 2, blockY, blockZ - 2);
                                         copyWorld.spawnEntity(rainMain, EntityType.PRIMED_TNT);
                                         copyWorld.spawnEntity(rain1, EntityType.PRIMED_TNT);
                                         copyWorld.spawnEntity(rain2, EntityType.PRIMED_TNT);
@@ -152,6 +145,39 @@ public class OnTick extends BukkitRunnable {
 
 
                                 }
+                                byClass.remove();
+                            }
+                        }
+                        if (PotionType.SLOW_FALLING.equals(type)) {
+                            boolean onGround = byClass.isOnGround();
+                            if (onGround) {
+                                ArrowFightPlugin arrowFightPlugin = ArrowFightPlugin.getPlugin(ArrowFightPlugin.class);
+                                for (int i = 1; i < 3; i++) {
+                                    new ArrowRain(arrowLocation).runTaskLater(arrowFightPlugin, i * 5);
+                                }
+                                byClass.remove();
+                            }
+                        }
+                        if (PotionType.FIRE_RESISTANCE.equals(type)) {
+                            if (byClass.isOnGround()) {
+                                Material material;
+                                if (extended) {
+                                    material = Material.FIRE;
+                                } else {
+                                    material = Material.LAVA;
+                                }
+                                int blockX = arrowLocation.getBlockX();
+                                int blockY = arrowLocation.getBlockY();
+                                int blockZ = arrowLocation.getBlockZ();
+                                replaceAir(material, arrowLocation);
+                                replaceAir(material, new Location(copyWorld, blockX + 1, blockY, blockZ));
+                                replaceAir(material, new Location(copyWorld, blockX - 1, blockY, blockZ));
+                                replaceAir(material, new Location(copyWorld, blockX, blockY, blockZ + 1));
+                                replaceAir(material, new Location(copyWorld, blockX, blockY, blockZ - 1));
+                                replaceAir(material, new Location(copyWorld, blockX + 1, blockY, blockZ + 1));
+                                replaceAir(material, new Location(copyWorld, blockX + 1, blockY, blockZ - 1));
+                                replaceAir(material, new Location(copyWorld, blockX - 1, blockY, blockZ + 1));
+                                replaceAir(material, new Location(copyWorld, blockX - 1, blockY, blockZ - 1));
                                 byClass.remove();
                             }
                         }

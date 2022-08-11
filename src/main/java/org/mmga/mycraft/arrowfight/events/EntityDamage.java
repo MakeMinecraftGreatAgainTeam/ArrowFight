@@ -13,6 +13,7 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
 import org.mmga.mycraft.arrowfight.ArrowFightPlugin;
 import org.mmga.mycraft.arrowfight.entities.MapObject;
+import org.mmga.mycraft.arrowfight.runnable.RemovePlayerPotionEffect;
 
 /**
  * Created On 2022/8/9 14:57

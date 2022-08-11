@@ -75,7 +75,6 @@ public class GameObject {
         lobbyLoc.setWorld(copyWorld);
         player.teleport(lobbyLoc);
         player.setHealth(20.0);
-        player.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 99999999, 255));
         if ((this.mapObject.getMax() - min) <= size) {
             tick = (20 * 75) - 1;
         }
@@ -297,8 +296,14 @@ public class GameObject {
             }
         }
     }
-
+    private int sec;
     public void sec() {
+        sec++;
+        if (sec % 60 == 0) {
+            for (Player player : this.getPlayers()) {
+                player.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 200, 2));
+            }
+        }
         List<String> entries = new ArrayList<>();
         if (!isStart) {
             if (players.size() < this.mapObject.getMin()) {
@@ -346,7 +351,7 @@ public class GameObject {
             gameInfo.unregister();
         }
         gameInfo = scoreboard.registerNewObjective("game_info", "dummy", Component.text(ChatColor.GOLD + ChatColor.BOLD.toString() + "弓箭大作战"));
-        for (Player player : this.getPlayers()) {
+        for (Player player : this.copyWorld.getPlayers()) {
 
             for (String entry : entries) {
                 gameInfo.getScore(entry).setScore(score);
@@ -370,7 +375,7 @@ public class GameObject {
     }
 
     public void sendToAll(String content, Sound sound) {
-        for (Player player : this.getPlayers()) {
+        for (Player player : this.copyWorld.getPlayers()) {
             player.sendMessage(content);
             player.sendTitle(content, null, 10, 70, 20);
             player.playSound(player.getLocation(), sound, 1.0f, 1.0f);

@@ -19,6 +19,8 @@ import org.mmga.mycraft.arrowfight.entities.MapObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
+import java.util.Set;
 
 /**
  * Created On 2022/8/4 22:30
@@ -105,6 +107,30 @@ public class ArrowFightCommand implements CommandExecutor, TabCompleter {
                     sender.sendMessage(ChatColor.RED + "控制台无法退出游戏");
                 }
                 break;
+            case JOIN:
+                if (sender instanceof Player) {
+                    ConfigurationSection games = plugin.getConfig().getConfigurationSection("game");
+                    if (games != null) {
+                        Set<String> keys = games.getKeys(false);
+                        boolean check = false;
+                        while (!check) {
+                            Random random = new Random();
+                            int i = random.nextInt(keys.size());
+                            ArrayList<String> strings = new ArrayList<>(keys);
+                            String s = strings.get(i);
+                            MapObject serializable = games.getSerializable(s, MapObject.class);
+                            assert serializable != null;
+                            check = serializable.check();
+                            if (!check) {
+                                continue;
+                            }
+                            serializable.join((Player) sender);
+                        }
+                    }
+                } else {
+                    sender.sendMessage(ChatColor.RED + "控制台无法加入游戏");
+                }
+                break;
             default:
                 sendHelp(sender, args[0]);
                 break;
@@ -116,6 +142,10 @@ public class ArrowFightCommand implements CommandExecutor, TabCompleter {
         String a1 = args[1];
         switch (a0) {
             case CREATE:
+                if (!sender.isOp()) {
+                    sender.sendMessage(ChatColor.RED + "你没有权限使用此指令");
+                    return;
+                }
                 if (checkNameLegality(sender, a1)) {
                     Object o = plugin.getConfig().get("game." + a1);
                     if (o == null) {
@@ -143,15 +173,22 @@ public class ArrowFightCommand implements CommandExecutor, TabCompleter {
                 }
                 break;
             case SETTINGS:
-                sendHelp(sender, SETTINGS);
+                if (sender.isOp()) {
+                    sendHelp(sender, SETTINGS);
+                } else {
+                    sender.sendMessage(ChatColor.RED + "你没有权限使用此指令");
+                }
                 break;
             case REMOVE:
+                if (!sender.isOp()) {
+                    sender.sendMessage(ChatColor.RED + "你没有权限使用此指令");
+                    return;
+                }
                 if (checkNameLegality(sender, a1)) {
                     plugin.getConfig().set("game." + a1, null);
                     plugin.saveConfig();
                     sender.sendMessage(ChatColor.GREEN + "成功删除地图");
                 }
-
                 break;
             case HELP:
                 sendHelp(sender, args[1]);
@@ -168,6 +205,10 @@ public class ArrowFightCommand implements CommandExecutor, TabCompleter {
         if (!SETTINGS.equals(a0)) {
             sender.sendMessage(ChatColor.RED + "错误的指令");
         } else {
+            if (!sender.isOp()) {
+                sender.sendMessage(ChatColor.RED + "你没有权限使用此指令");
+                return;
+            }
             if (checkNameLegality(sender, a1)) {
                 MapObject mapObject = plugin.getConfig().getSerializable("game." + a1, MapObject.class);
                 if (mapObject == null) {
@@ -246,6 +287,10 @@ public class ArrowFightCommand implements CommandExecutor, TabCompleter {
         if (!SETTINGS.equals(a0)) {
             sender.sendMessage(ChatColor.RED + "错误的指令");
         } else {
+            if (!sender.isOp()) {
+                sender.sendMessage(ChatColor.RED + "你没有权限使用此指令");
+                return;
+            }
             if (checkNameLegality(sender, a1)) {
                 MapObject mapObject = plugin.getConfig().getSerializable("game." + a1, MapObject.class);
                 if (mapObject == null) {
@@ -290,6 +335,10 @@ public class ArrowFightCommand implements CommandExecutor, TabCompleter {
         if (!SETTINGS.equals(a0)) {
             sender.sendMessage(ChatColor.RED + "错误的指令");
         } else {
+            if (!sender.isOp()) {
+                sender.sendMessage(ChatColor.RED + "你没有权限使用此指令");
+                return;
+            }
             if (GLOBAL.equals(a1)) {
                 if (SET_MAIN_LOBBY.equals(a2)) {
                     World world;
@@ -357,13 +406,13 @@ public class ArrowFightCommand implements CommandExecutor, TabCompleter {
         List<String> result = new ArrayList<>();
         switch (length) {
             case 1:
-                args1Tab(result);
+                args1Tab(sender, result);
                 break;
             case 2:
-                args2Tab(result, args);
+                args2Tab(sender, result, args);
                 break;
             case 3:
-                args3Tab(result, args);
+                args3Tab(sender, result, args);
                 break;
             case 4:
                 args4Tab(result, sender, args);
@@ -386,101 +435,121 @@ public class ArrowFightCommand implements CommandExecutor, TabCompleter {
         return r;
     }
 
-    private void args1Tab(List<String> result) {
-        result.add(CREATE);
-        result.add(SETTINGS);
+    private void args1Tab(CommandSender sender, List<String> result) {
+        if (sender.isOp()) {
+            result.add(CREATE);
+            result.add(SETTINGS);
+            result.add(REMOVE);
+            result.add(RELOAD);
+            result.add(SAVE);
+        }
         result.add(JOIN);
-        result.add(REMOVE);
         result.add(HELP);
-        result.add(RELOAD);
-        result.add(SAVE);
         result.add(LEAVE);
     }
 
-    private void args2Tab(List<String> result, String... args) {
+    private void args2Tab(CommandSender sender, List<String> result, String... args) {
         String base = args[0];
         if (SETTINGS.equals(base) || REMOVE.equals(base) || JOIN.equals(base)) {
             ConfigurationSection games = plugin.getConfig().getConfigurationSection("game");
-            if (games != null) {
-                result.addAll(games.getKeys(false));
+            if (SETTINGS.equals(base) || REMOVE.equals(base)) {
+                if (sender.isOp()) {
+                    if (games != null) {
+                        result.addAll(games.getKeys(false));
+                    }
+                    if (SETTINGS.equals(base)) {
+                        result.add(GLOBAL);
+                    }
+                }
+            } else {
+                if (games != null) {
+                    result.addAll(games.getKeys(false));
+                }
             }
-            if (SETTINGS.equals(base)) {
-                result.add(GLOBAL);
-            }
+
         }
     }
 
-    private void args3Tab(List<String> result, String @NotNull ... args) {
-        String base = args[0];
-        if (SETTINGS.equals(base)) {
-            String game = args[1];
-            if (GLOBAL.equals(game)) {
-                result.add(SET_MAIN_LOBBY);
-            } else {
-                result.add(SET_MIN);
-                result.add(SET_MAX);
-                result.add(SET_WORLD);
-                result.add(SET_LOBBY);
-                result.add(SET_RED_SPAWN);
-                result.add(SET_BLUE_SPAWN);
-                result.add(SET_RED_VILLAGER_SPAWN);
-                result.add(SET_BLUE_VILLAGER_SPAWN);
+    private void args3Tab(CommandSender sender, List<String> result, String @NotNull ... args) {
+        if (sender.isOp()) {
+            String base = args[0];
+            if (SETTINGS.equals(base)) {
+                String game = args[1];
+                if (GLOBAL.equals(game)) {
+                    result.add(SET_MAIN_LOBBY);
+                } else {
+                    result.add(SET_MIN);
+                    result.add(SET_MAX);
+                    result.add(SET_WORLD);
+                    result.add(SET_LOBBY);
+                    result.add(SET_RED_SPAWN);
+                    result.add(SET_BLUE_SPAWN);
+                    result.add(SET_RED_VILLAGER_SPAWN);
+                    result.add(SET_BLUE_VILLAGER_SPAWN);
+                }
             }
         }
+
     }
 
     private void args4Tab(List<String> result, CommandSender sender, String... args) {
-        String base = args[0];
-        if (SETTINGS.equals(base)) {
-            String model = args[2];
-            if (SET_WORLD.equals(model)) {
-                for (World world : server.getWorlds()) {
-                    result.add(world.getName());
-                }
-            }
-            if (SET_LOBBY.equals(model) || SET_RED_SPAWN.equals(model) || SET_RED_VILLAGER_SPAWN.equals(model) || SET_BLUE_SPAWN.equals(model) || SET_BLUE_VILLAGER_SPAWN.equals(model) || SET_MAIN_LOBBY.equals(model)) {
-                int x = 0;
-                if (sender instanceof Player) {
-                    Block targetBlock = ((Player) sender).getTargetBlock(8);
-                    if (targetBlock != null) {
-                        x = targetBlock.getLocation().getBlockX();
+        if (sender.isOp()) {
+            String base = args[0];
+            if (SETTINGS.equals(base)) {
+                String model = args[2];
+                if (SET_WORLD.equals(model)) {
+                    for (World world : server.getWorlds()) {
+                        result.add(world.getName());
                     }
                 }
-                result.add(String.valueOf(x));
+                if (SET_LOBBY.equals(model) || SET_RED_SPAWN.equals(model) || SET_RED_VILLAGER_SPAWN.equals(model) || SET_BLUE_SPAWN.equals(model) || SET_BLUE_VILLAGER_SPAWN.equals(model) || SET_MAIN_LOBBY.equals(model)) {
+                    int x = 0;
+                    if (sender instanceof Player) {
+                        Block targetBlock = ((Player) sender).getTargetBlock(8);
+                        if (targetBlock != null) {
+                            x = targetBlock.getLocation().getBlockX();
+                        }
+                    }
+                    result.add(String.valueOf(x));
+                }
             }
         }
     }
 
     private void args5Tab(List<String> result, CommandSender sender, String... args) {
-        String base = args[0];
-        if (SETTINGS.equals(base)) {
-            String model = args[2];
-            if (SET_LOBBY.equals(model) || SET_RED_SPAWN.equals(model) || SET_RED_VILLAGER_SPAWN.equals(model) || SET_BLUE_SPAWN.equals(model) || SET_BLUE_VILLAGER_SPAWN.equals(model) || SET_MAIN_LOBBY.equals(model)) {
-                int y = 0;
-                if (sender instanceof Player) {
-                    Block targetBlock = ((Player) sender).getTargetBlock(8);
-                    if (targetBlock != null) {
-                        y = targetBlock.getLocation().getBlockY();
+        if (sender.isOp()) {
+            String base = args[0];
+            if (SETTINGS.equals(base)) {
+                String model = args[2];
+                if (SET_LOBBY.equals(model) || SET_RED_SPAWN.equals(model) || SET_RED_VILLAGER_SPAWN.equals(model) || SET_BLUE_SPAWN.equals(model) || SET_BLUE_VILLAGER_SPAWN.equals(model) || SET_MAIN_LOBBY.equals(model)) {
+                    int y = 0;
+                    if (sender instanceof Player) {
+                        Block targetBlock = ((Player) sender).getTargetBlock(8);
+                        if (targetBlock != null) {
+                            y = targetBlock.getLocation().getBlockY();
+                        }
                     }
+                    result.add(String.valueOf(y));
                 }
-                result.add(String.valueOf(y));
             }
         }
     }
 
     private void args6Tab(List<String> result, CommandSender sender, String... args) {
-        String base = args[0];
-        if (SETTINGS.equals(base)) {
-            String model = args[2];
-            if (SET_LOBBY.equals(model) || SET_RED_SPAWN.equals(model) || SET_RED_VILLAGER_SPAWN.equals(model) || SET_BLUE_SPAWN.equals(model) || SET_BLUE_VILLAGER_SPAWN.equals(model) || SET_MAIN_LOBBY.equals(model)) {
-                int z = 0;
-                if (sender instanceof Player) {
-                    Block targetBlock = ((Player) sender).getTargetBlock(8);
-                    if (targetBlock != null) {
-                        z = targetBlock.getLocation().getBlockZ();
+        if (sender.isOp()) {
+            String base = args[0];
+            if (SETTINGS.equals(base)) {
+                String model = args[2];
+                if (SET_LOBBY.equals(model) || SET_RED_SPAWN.equals(model) || SET_RED_VILLAGER_SPAWN.equals(model) || SET_BLUE_SPAWN.equals(model) || SET_BLUE_VILLAGER_SPAWN.equals(model) || SET_MAIN_LOBBY.equals(model)) {
+                    int z = 0;
+                    if (sender instanceof Player) {
+                        Block targetBlock = ((Player) sender).getTargetBlock(8);
+                        if (targetBlock != null) {
+                            z = targetBlock.getLocation().getBlockZ();
+                        }
                     }
+                    result.add(String.valueOf(z));
                 }
-                result.add(String.valueOf(z));
             }
         }
     }
@@ -510,23 +579,35 @@ public class ArrowFightCommand implements CommandExecutor, TabCompleter {
     }
 
     public void createHelp(CommandSender player) {
-        player.sendMessage("/af create <MapName> 创建一个地图");
+        if (player.isOp()) {
+            player.sendMessage("/af create <MapName> 创建一个地图");
+        } else {
+            player.sendMessage(ChatColor.RED + "错误的指令");
+        }
     }
 
     public void removeHelp(CommandSender player) {
-        player.sendMessage("/af delete <MapName> 删除一个地图");
+        if (player.isOp()) {
+            player.sendMessage("/af remove <MapName> 删除一个地图");
+        } else {
+            player.sendMessage(ChatColor.RED + "错误的指令");
+        }
     }
 
     public void settingsHelp(CommandSender player) {
-        player.sendMessage("/af settings <MapName> setMin <Num> 设置最小玩家数（默认2）");
-        player.sendMessage("/af settings <MapName> setMax <Num> 设置最大玩家数（默认16）");
-        player.sendMessage("/af settings <MapName> setWorld [World] 设置游戏世界在当前世界或世界World");
-        player.sendMessage("/af settings <MapName> setLobby [Pos] 设置大厅生成位置在玩家位置或Pos的位置");
-        player.sendMessage("/af settings <MapName> setRedSpawn [Pos] 设置红队生成位置在玩家位置或Pos的位置");
-        player.sendMessage("/af settings <MapName> setBlueSpawn [Pos] 设置蓝队生成位置在玩家位置或Pos的位置");
-        player.sendMessage("/af settings <MapName> setRedVillagerSpawn [Pos] 设置红队生成位置在玩家位置或Pos的位置");
-        player.sendMessage("/af settings <MapName> setBlueVillagerSpawn [Pos] 设置蓝队生成位置在玩家位置或Pos的位置");
-        player.sendMessage("/af settings global setMainLobby [Pos] 设置主大厅位置（即玩家游戏结束后被传送至的位置）");
+        if (player.isOp()) {
+            player.sendMessage("/af settings <MapName> setMin <Num> 设置最小玩家数（默认2）");
+            player.sendMessage("/af settings <MapName> setMax <Num> 设置最大玩家数（默认16）");
+            player.sendMessage("/af settings <MapName> setWorld [World] 设置游戏世界在当前世界或世界World");
+            player.sendMessage("/af settings <MapName> setLobby [Pos] 设置大厅生成位置在玩家位置或Pos的位置");
+            player.sendMessage("/af settings <MapName> setRedSpawn [Pos] 设置红队生成位置在玩家位置或Pos的位置");
+            player.sendMessage("/af settings <MapName> setBlueSpawn [Pos] 设置蓝队生成位置在玩家位置或Pos的位置");
+            player.sendMessage("/af settings <MapName> setRedVillagerSpawn [Pos] 设置红队生成位置在玩家位置或Pos的位置");
+            player.sendMessage("/af settings <MapName> setBlueVillagerSpawn [Pos] 设置蓝队生成位置在玩家位置或Pos的位置");
+            player.sendMessage("/af settings global setMainLobby [Pos] 设置主大厅位置（即玩家游戏结束后被传送至的位置）");
+        } else {
+            player.sendMessage(ChatColor.RED + "错误的指令");
+        }
     }
 
     public void joinHelp(CommandSender player) {
@@ -534,13 +615,15 @@ public class ArrowFightCommand implements CommandExecutor, TabCompleter {
     }
 
     public void allHelp(CommandSender player) {
-        player.sendMessage("/af create 关于创建地图的部分指令");
-        player.sendMessage("/af settings 关于地图设置的部分指令");
+        if (player.isOp()) {
+            player.sendMessage("/af create 关于创建地图的部分指令");
+            player.sendMessage("/af settings 关于地图设置的部分指令");
+            player.sendMessage("/af remove 关于移除地图的部分指令");
+            player.sendMessage("/af save 保存游戏设置到配置文件");
+        }
         player.sendMessage("/af join 关于加入游戏的部分指令");
-        player.sendMessage("/af remove 关于移除地图的部分指令");
-        player.sendMessage("/af help 获取此帮助");
         player.sendMessage("/af leave 退出这场游戏");
-        player.sendMessage("/af save 保存游戏设置到配置文件");
+        player.sendMessage("/af help 获取此帮助");
     }
 
     public boolean checkNameLegality(CommandSender sender, String name) {
