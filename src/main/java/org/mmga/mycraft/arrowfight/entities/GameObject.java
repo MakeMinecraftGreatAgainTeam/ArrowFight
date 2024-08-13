@@ -38,6 +38,7 @@ public class GameObject {
     private final static int MIN_SEC = HALF_MIN_SEC * 2;
     private final String name;
     private final List<Player> players;
+    private final List<Player> deathPlayers = new ArrayList<>();
     public final List<Player> leavePlayers = new ArrayList<>();
     private final Map<Player, GameTeam> teamPlayers = new HashMap<>();
     private final World copyWorld;
@@ -64,6 +65,10 @@ public class GameObject {
         this.copyWorld = mvWorldManager.getMVWorld(this.name).getCBWorld();
         this.scoreboard = server.getScoreboardManager().getNewScoreboard();
         this.copyWorld.setTime(1000);
+        this.copyWorld.setGameRule(GameRule.DO_IMMEDIATE_RESPAWN, true);
+        this.copyWorld.setGameRule(GameRule.DO_MOB_SPAWNING, false);
+        this.copyWorld.setGameRule(GameRule.DO_PATROL_SPAWNING, false);
+        this.copyWorld.setGameRule(GameRule.DO_TRADER_SPAWNING, false);
     }
 
     public void join(Player player) {
@@ -96,8 +101,10 @@ public class GameObject {
         if (this.isStart) {
             this.teamPlayers.remove(player);
         }
-        for (Player tPlayer : this.players) {
-            tPlayer.sendMessage(ChatColor.RED + "玩家" + ChatColor.GOLD + player.getName() + ChatColor.RED + "退出了游戏");
+        if (!this.deathPlayers.contains(player)){
+            for (Player tPlayer : this.players) {
+                tPlayer.sendMessage(ChatColor.RED + "玩家" + ChatColor.GOLD + player.getName() + ChatColor.RED + "退出了游戏");
+            }
         }
         player.getInventory().clear();
         ArrowFightPlugin plugin = ArrowFightPlugin.getPlugin(ArrowFightPlugin.class);
@@ -105,7 +112,7 @@ public class GameObject {
         player.teleport(Objects.requireNonNull(plugin.getConfig().getLocation("lobby")));
         player.setScoreboard(server.getScoreboardManager().getMainScoreboard());
         player.removePotionEffect(PotionEffectType.SATURATION);
-        if (this.players.size() == 0) {
+        if (this.players.isEmpty()) {
             MapObject.GAMES.decr(this.mapObject, this);
             Logger log = plugin.getSLF4JLogger();
             PluginManager pluginManager = server.getPluginManager();
@@ -114,9 +121,9 @@ public class GameObject {
             MVWorldManager mvWorldManager = core.getMVWorldManager();
             boolean is = mvWorldManager.deleteWorld(this.name);
             if (is) {
-                log.info(ChatColor.GREEN + "移除世界：" + name + "成功");
+                log.info("{}移除世界：{}成功", ChatColor.GREEN, name);
             } else {
-                log.error(ChatColor.RED + "移除世界：" + name + "失败");
+                log.error("{}移除世界：{}失败", ChatColor.RED, name);
             }
         }
     }
@@ -235,6 +242,9 @@ public class GameObject {
 
     public void addTick() {
         if (players.size() >= this.mapObject.getMin()) {
+/*            if (this.tick < SEC_TICK * (MIN_SEC + FIFTEEN_SEC + FIVE_SEC)){
+                this.tick = SEC_TICK * (MIN_SEC + FIFTEEN_SEC + FIVE_SEC);
+            }*/
             this.tick += 1;
             if (tick == 1) {
                 sendToAll(ChatColor.GREEN + "1m30s后开始游戏", Sound.BLOCK_NOTE_BLOCK_BIT);
@@ -273,12 +283,25 @@ public class GameObject {
         }
         boolean hasB = false;
         boolean hasR = false;
-        for (GameTeam value : this.teamPlayers.values()) {
+        for (Map.Entry<Player, GameTeam> entry : this.teamPlayers.entrySet()) {
+            GameTeam value = entry.getValue();
             if (GameTeam.RED.equals(value)) {
                 hasR = true;
             }
             if (GameTeam.BLUE.equals(value)) {
                 hasB = true;
+            }
+            Player key = entry.getKey();
+            if (!GameMode.SURVIVAL.equals(key.getGameMode())){
+                key.setGameMode(GameMode.SURVIVAL);
+            }
+        }
+        for (Player player : players) {
+            if (teamPlayers.containsKey(player)){
+                continue;
+            }
+            if(!GameMode.SPECTATOR.equals(player.getGameMode())){
+                player.setGameMode(GameMode.SPECTATOR);
             }
         }
         boolean win = !this.done && this.isStart && (!hasR || !hasB);
@@ -294,6 +317,7 @@ public class GameObject {
             this.beforeRemove--;
         }
         if (this.beforeRemove == 0) {
+            this.players.addAll(this.deathPlayers);
             for (Player player : players) {
                 this.leave(player);
             }
@@ -391,6 +415,10 @@ public class GameObject {
 
     public MapObject getMapObject() {
         return mapObject;
+    }
+
+    public List<Player> getDeathPlayers() {
+        return deathPlayers;
     }
 
     public enum GameTeam {

@@ -2,11 +2,9 @@ package org.mmga.mycraft.arrowfight.events;
 
 import org.bukkit.*;
 import org.bukkit.block.Block;
-import org.bukkit.entity.AreaEffectCloud;
-import org.bukkit.entity.Arrow;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
 import org.bukkit.potion.PotionData;
+import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionType;
 import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -63,9 +61,13 @@ public class OnTick extends BukkitRunnable {
                                     for (int z = -3; z <= 3; z++) {
                                         Block block = new Location(world, blockX + x, blockY + y, blockZ + z).getBlock();
                                         Material material = block.getType();
-                                        if (!Material.BEDROCK.equals(material)) {
-                                            block.setType(Material.AIR);
+                                        if (Material.BEDROCK.equals(material)) {
+                                            continue;
                                         }
+                                        if (Material.MOVING_PISTON.equals(material)){
+                                            continue;
+                                        }
+                                        block.setType(Material.AIR);
                                     }
                                 }
                             }
@@ -153,8 +155,14 @@ public class OnTick extends BukkitRunnable {
                             boolean onGround = byClass.isOnGround();
                             if (onGround) {
                                 ArrowFightPlugin arrowFightPlugin = ArrowFightPlugin.getPlugin(ArrowFightPlugin.class);
-                                for (int i = 1; i < 3; i++) {
-                                    new ArrowRain(arrowLocation).runTaskLater(arrowFightPlugin, i * 5);
+                                if (extended) {
+                                    World worldCopied = gameObject.getCopyWorld();
+                                    LightningStrike spawn = worldCopied.spawn(arrowLocation, LightningStrike.class);
+                                    spawn.setLifeTicks(20);
+                                } else {
+                                    for (int i = 1; i < 3; i++) {
+                                        new ArrowRain(arrowLocation).runTaskLater(arrowFightPlugin, i * 5);
+                                    }
                                 }
                                 byClass.remove();
                             }
@@ -188,6 +196,15 @@ public class OnTick extends BukkitRunnable {
                                 entity.setBasePotionData(new PotionData(PotionType.POISON, true, false));
                                 byClass.remove();
                             }
+                        }
+                    }
+                    Collection<Villager> entities = copyWorld.getEntitiesByClass(Villager.class);
+                    for (Villager entity : entities) {
+                        if (entity.getScoreboardTags().contains(EntityDamage.GAME_TAG)) {
+                            for (PotionEffect activePotionEffect : entity.getActivePotionEffects()) {
+                                entity.removePotionEffect(activePotionEffect.getType());
+                            }
+                            entity.setAI(false);
                         }
                     }
                     if (runSec) {

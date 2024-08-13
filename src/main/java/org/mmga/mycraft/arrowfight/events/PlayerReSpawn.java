@@ -24,6 +24,7 @@ public class PlayerReSpawn implements Listener {
             GameObject gameObject = MapObject.PLAYERS.get(entity);
             if (gameObject.isStart()) {
                 gameObject.getPlayers().remove(entity);
+                gameObject.getDeathPlayers().add(entity);
                 Map<Player, GameObject.GameTeam> teamPlayers = gameObject.getTeamPlayers();
                 GameObject.GameTeam gameTeam = teamPlayers.get(entity);
                 MapObject mapObject = gameObject.getMapObject();

@@ -130,7 +130,7 @@ public class MapObject implements ConfigurationSerializable {
         }
         player.sendMessage(ChatColor.GREEN + "正在寻找房间...");
         CopyOnWriteArrayList<GameObject> strings = GAMES.get(this);
-        if (strings == null || strings.size() == 0) {
+        if (strings == null || strings.isEmpty()) {
             startGame(player);
         } else {
             boolean has = false;
