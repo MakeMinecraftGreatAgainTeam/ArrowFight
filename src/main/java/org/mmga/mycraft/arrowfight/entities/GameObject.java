@@ -242,7 +242,8 @@ public class GameObject {
 
     public void addTick() {
         if (players.size() >= this.mapObject.getMin()) {
-/*            if (this.tick < SEC_TICK * (MIN_SEC + FIFTEEN_SEC + FIVE_SEC)){
+            // 这段是人够即五秒开始
+            /*if (this.tick < SEC_TICK * (MIN_SEC + FIFTEEN_SEC + FIVE_SEC)){
                 this.tick = SEC_TICK * (MIN_SEC + FIFTEEN_SEC + FIVE_SEC);
             }*/
             this.tick += 1;
