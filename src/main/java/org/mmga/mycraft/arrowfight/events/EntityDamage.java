@@ -8,11 +8,13 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
 import org.mmga.mycraft.arrowfight.ArrowFightPlugin;
+import org.mmga.mycraft.arrowfight.entities.GameObject;
 import org.mmga.mycraft.arrowfight.entities.MapObject;
 import org.mmga.mycraft.arrowfight.runnable.RemovePlayerPotionEffect;
 
@@ -46,8 +48,11 @@ public class EntityDamage implements Listener {
                 }
             }
         }
-        if (EntityType.PLAYER.equals(type) && EntityType.PLAYER.equals(damagerType)) {
-            event.setCancelled(true);
+        if (EntityType.PLAYER.equals(type) && damager instanceof Player) {
+            GameObject gameObject = MapObject.PLAYERS.get(damager);
+            if (!gameObject.isStart()) {
+                event.setCancelled(true);
+            }
         }
     }
 
@@ -56,6 +61,15 @@ public class EntityDamage implements Listener {
         Entity entity = event.getEntity();
         EntityType type = entity.getType();
         if (EntityType.VILLAGER.equals(type) && entity.getScoreboardTags().contains(GAME_TAG)) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onEntityDamage(EntityDamageEvent event) {
+        Entity entity = event.getEntity();
+        EntityType type = entity.getType();
+        if (type.equals(EntityType.VILLAGER)){
             event.setCancelled(true);
         }
     }
