@@ -13,7 +13,6 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
 import org.mmga.mycraft.arrowfight.entities.MapObject;
 
-import java.rmi.MarshalException;
 import java.util.Random;
 
 /**
