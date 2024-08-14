@@ -29,7 +29,13 @@ import java.util.Set;
  * @version 1.0.0
  */
 public class ArrowFightCommand implements CommandExecutor, TabCompleter {
+    private final static int SEC_TICK = 20;
+    private final static int FIVE_SEC = 5;
+    private final static int FIFTEEN_SEC = FIVE_SEC * 3;
+    private final static int HALF_MIN_SEC = FIFTEEN_SEC * 2;
+    private final static int MIN_SEC = HALF_MIN_SEC * 2;
     private static final String CREATE = "create";
+    private static final String FORCESTART = "forcestart";
     private static final String JOIN = "join";
     private static final String SETTINGS = "settings";
     private static final String REMOVE = "remove";
@@ -131,6 +137,19 @@ public class ArrowFightCommand implements CommandExecutor, TabCompleter {
                     sender.sendMessage(ChatColor.RED + "控制台无法加入游戏");
                 }
                 break;
+            case FORCESTART:
+                if (sender instanceof Player) {
+                    if (!sender.isOp()) {
+                        sender.sendMessage(ChatColor.RED + "你没有权限使用此指令");
+                        return;
+                    } else {
+                        GameObject ob = MapObject.PLAYERS.get(sender);
+                        if (ob != null) {
+                            ob.forceStart((Player) sender);
+                        }
+                    }
+                    break;
+                }
             default:
                 sendHelp(sender, args[0]);
                 break;
@@ -442,6 +461,7 @@ public class ArrowFightCommand implements CommandExecutor, TabCompleter {
             result.add(REMOVE);
             result.add(RELOAD);
             result.add(SAVE);
+            result.add(FORCESTART);
         }
         result.add(JOIN);
         result.add(HELP);

@@ -1,19 +1,20 @@
 package org.mmga.mycraft.arrowfight.events;
 
 import org.bukkit.*;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Block;
 import org.bukkit.entity.*;
-import org.bukkit.potion.PotionData;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionType;
+import org.bukkit.potion.*;
 import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.mmga.mycraft.arrowfight.ArrowFightPlugin;
 import org.mmga.mycraft.arrowfight.entities.GameObject;
 import org.mmga.mycraft.arrowfight.entities.MapObject;
 import org.mmga.mycraft.arrowfight.runnable.ArrowRain;
+import org.mmga.mycraft.arrowfight.entities.GameObject;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -43,8 +44,14 @@ public class OnTick extends BukkitRunnable {
             if (gameObjects != null) {
                 for (GameObject gameObject : gameObjects) {
                     gameObject.addTick();
+                    //显示游戏内tick
+                    //gameObject.sendToAll(ChatColor.RED + "tick:" + GameObject.tick, Sound.BLOCK_NOTE_BLOCK_BIT);
                     World copyWorld = gameObject.getCopyWorld();
                     Collection<Arrow> entitiesByClass = copyWorld.getEntitiesByClass(Arrow.class);
+                    //死斗模式时间检测
+                    if (GameObject.tick == 1800 + (20 * 600)) {
+                        gameObject.deathMatch();
+                    }
                     for (Arrow byClass : entitiesByClass) {
                         PotionData basePotionData = byClass.getBasePotionData();
                         PotionType type = basePotionData.getType();
@@ -157,8 +164,9 @@ public class OnTick extends BukkitRunnable {
                                 ArrowFightPlugin arrowFightPlugin = ArrowFightPlugin.getPlugin(ArrowFightPlugin.class);
                                 if (extended) {
                                     World worldCopied = gameObject.getCopyWorld();
-                                    LightningStrike spawn = worldCopied.spawn(arrowLocation, LightningStrike.class);
-                                    spawn.setLifeTicks(20);
+                                    worldCopied.strikeLightning(arrowLocation);
+//                                    LightningStrike spawn = worldCopied.spawn(arrowLocation, LightningStrike.class);
+//                                    spawn.setLifeTicks(20);
                                 } else {
                                     for (int i = 1; i < 3; i++) {
                                         new ArrowRain(arrowLocation).runTaskLater(arrowFightPlugin, i * 5);
@@ -202,9 +210,10 @@ public class OnTick extends BukkitRunnable {
                     for (Villager entity : entities) {
                         if (entity.getScoreboardTags().contains(EntityDamage.GAME_TAG)) {
                             for (PotionEffect activePotionEffect : entity.getActivePotionEffects()) {
-                                entity.removePotionEffect(activePotionEffect.getType());
+                                PotionEffectType effectType = activePotionEffect.getType();
+                                    entity.removePotionEffect(effectType);
                             }
-                            entity.setAI(false);
+//                            entity.setAI(false);
                         }
                     }
                     if (runSec) {

@@ -8,9 +8,12 @@ import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -43,11 +46,12 @@ public class GameObject {
     private final Map<Player, GameTeam> teamPlayers = new HashMap<>();
     private final World copyWorld;
     private final MapObject mapObject;
-    private int tick;
+    public static int tick;
     private int beforeRemove = 100;
     private boolean done = false;
-    private boolean isStart;
+    private static boolean isStart;
     private final Scoreboard scoreboard;
+    private final ItemStack leaveGame;
 
     public GameObject(String name, List<Player> players, MapObject mapObject) {
         this.name = name;
@@ -55,6 +59,10 @@ public class GameObject {
         this.mapObject = mapObject;
         this.isStart = false;
         this.tick = -1;
+        leaveGame = new ItemStack(Material.SLIME_BALL);
+        ItemMeta itemMeta = leaveGame.getItemMeta();
+        itemMeta.displayName(Component.text("离开游戏", NamedTextColor.GREEN));
+        leaveGame.setItemMeta(itemMeta);
         ArrowFightPlugin plugin = ArrowFightPlugin.getPlugin(ArrowFightPlugin.class);
         Server server = plugin.getServer();
         PluginManager pluginManager = server.getPluginManager();
@@ -85,6 +93,7 @@ public class GameObject {
             tick = (20 * 75) - 1;
         }
         player.getInventory().clear();
+        player.getInventory().setItem(8, leaveGame);
         for (Player player1 : players) {
             player1.sendMessage(ChatColor.GREEN + "玩家" + player.getName() + "加入了游戏   " + size + "/" + this.mapObject.getMax());
             if (min > size) {
@@ -101,7 +110,7 @@ public class GameObject {
         if (this.isStart) {
             this.teamPlayers.remove(player);
         }
-        if (!this.deathPlayers.contains(player)){
+        if (!this.deathPlayers.contains(player)) {
             for (Player tPlayer : this.players) {
                 tPlayer.sendMessage(ChatColor.RED + "玩家" + ChatColor.GOLD + player.getName() + ChatColor.RED + "退出了游戏");
             }
@@ -138,6 +147,7 @@ public class GameObject {
             int b = 0;
             int r = 0;
             for (Player player : players) {
+                player.getInventory().clear();
                 boolean blue = false;
                 if (b >= players.size() / 2) {
                     r++;
@@ -187,7 +197,7 @@ public class GameObject {
                 }
                 clone.setWorld(this.copyWorld);
                 player.teleport(clone);
-                player.getInventory().addItem(new ItemStack(Material.BOW, 1), new ItemStack(Material.STONE_AXE, 1), new ItemStack(Material.STONE_PICKAXE, 1), new ItemStack(Material.STONE_SHOVEL, 1));
+                player.getInventory().addItem(new ItemStack(Material.BOW, 1), new ItemStack(Material.IRON_AXE, 1), new ItemStack(Material.STONE_PICKAXE, 1), new ItemStack(Material.DIAMOND_SHOVEL, 1));
             }
             Location blueVillagerSpawn = this.mapObject.getBlueVillagerSpawn().clone();
             blueVillagerSpawn.setWorld(this.copyWorld);
@@ -197,6 +207,10 @@ public class GameObject {
             Villager redVillager = (Villager) this.copyWorld.spawnEntity(redVillagerSpawn, EntityType.VILLAGER);
             VillagerUtils.initVillager(blueVillager);
             VillagerUtils.initVillager(redVillager);
+            blueVillager.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(0);
+            redVillager.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(0);
+            blueVillager.setCollidable(false);
+            redVillager.setCollidable(false);
         }
     }
 
@@ -240,12 +254,16 @@ public class GameObject {
         return players;
     }
 
+    public void setTick(int tick) {
+        this.tick = tick;
+    }
+
     public void addTick() {
         if (players.size() >= this.mapObject.getMin()) {
-            // 这段是人够即五秒开始
-            /*if (this.tick < SEC_TICK * (MIN_SEC + FIFTEEN_SEC + FIVE_SEC)){
-                this.tick = SEC_TICK * (MIN_SEC + FIFTEEN_SEC + FIVE_SEC);
-            }*/
+            // 这段是人够即五秒开始 todo
+//            if (this.tick < SEC_TICK * (MIN_SEC + FIFTEEN_SEC + FIVE_SEC)){
+//                this.tick = SEC_TICK * (MIN_SEC + FIFTEEN_SEC + FIVE_SEC);
+//            }
             this.tick += 1;
             if (tick == 1) {
                 sendToAll(ChatColor.GREEN + "1m30s后开始游戏", Sound.BLOCK_NOTE_BLOCK_BIT);
@@ -293,19 +311,19 @@ public class GameObject {
                 hasB = true;
             }
             Player key = entry.getKey();
-            if (!GameMode.SURVIVAL.equals(key.getGameMode())){
+            if (!GameMode.SURVIVAL.equals(key.getGameMode())) {
                 key.setGameMode(GameMode.SURVIVAL);
             }
         }
         for (Player player : players) {
-            if (teamPlayers.containsKey(player)){
+            if (teamPlayers.containsKey(player)) {
                 continue;
             }
-            if(!GameMode.SPECTATOR.equals(player.getGameMode())){
-                player.setGameMode(GameMode.SPECTATOR);
+            if (!GameMode.ADVENTURE.equals(player.getGameMode())) {
+                player.setGameMode(GameMode.ADVENTURE);
             }
         }
-        boolean win = !this.done && this.isStart && (!hasR || !hasB);
+        boolean win = !this.done && isStart && (!hasR || !hasB);
         if (win) {
             GameTeam gameTeam = GameTeam.RED;
             if (hasB) {
@@ -324,7 +342,9 @@ public class GameObject {
             }
         }
     }
+
     private int sec;
+
     public void sec() {
         sec++;
         if (sec % 60 == 0) {
@@ -420,6 +440,42 @@ public class GameObject {
 
     public List<Player> getDeathPlayers() {
         return deathPlayers;
+    }
+
+    public void forceStart(Player player) {
+        if (isStart){
+            player.sendMessage(Component.text("游戏已开始！", NamedTextColor.RED));
+            return;
+        }
+        if (!(players.size() >= 2)) {
+            player.sendMessage(Component.text("当前人数不足 2 人，无法开始游戏", NamedTextColor.RED));
+            return;
+        }
+        if (this.tick < SEC_TICK * (HALF_MIN_SEC + MIN_SEC)) {
+            this.tick = SEC_TICK * (HALF_MIN_SEC + MIN_SEC - 1);
+            player.sendMessage(Component.text("游戏已强制开始", NamedTextColor.GREEN));
+        }
+    }
+
+    public void deathMatch() {
+        sendToAll(ChatColor.RED + "死斗模式开始！", Sound.ENTITY_LIGHTNING_BOLT_THUNDER);
+        ItemStack emeralds = new ItemStack(Material.EMERALD, 64);
+        ItemStack goldenApples = new ItemStack(Material.GOLDEN_APPLE, 32);
+        ItemStack redStoneBlocks = new ItemStack(Material.REDSTONE_BLOCK, 32);
+        ItemStack cobbleStones = new ItemStack(Material.COBBLESTONE, 256);
+        ItemStack shield = new ItemStack(Material.SHIELD, 1);
+        ItemStack dirts = new ItemStack(Material.DIRT, 64);
+        for (Player player : players) {
+            if (GameMode.SURVIVAL.equals(player.getGameMode())) {
+                PlayerInventory inventory = player.getInventory();
+                inventory.addItem(emeralds);
+                inventory.addItem(goldenApples);
+                inventory.addItem(redStoneBlocks);
+                inventory.addItem(cobbleStones);
+                inventory.addItem(shield);
+                inventory.addItem(dirts);
+            }
+        }
     }
 
     public enum GameTeam {

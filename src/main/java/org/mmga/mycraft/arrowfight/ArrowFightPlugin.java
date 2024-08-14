@@ -29,17 +29,17 @@ public final class ArrowFightPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         Logger log = super.getSLF4JLogger();
-        log.info(ChatColor.GREEN + "Start Loading...");
+        log.info("{}Start Loading...", ChatColor.GREEN);
         boolean b = this.checkEnvironment();
         if (b) {
-            log.error(ChatColor.RED + "缺少插件依赖！");
+            log.error("{}缺少插件依赖！", ChatColor.RED);
             disableMe();
             return;
         }
         this.hookPapi();
         PluginCommand af = super.getCommand("af");
         if (af == null) {
-            log.error(ChatColor.RED + "指令af注册失败！");
+            log.error("{}指令af注册失败！", ChatColor.RED);
             disableMe();
             return;
         }
@@ -51,6 +51,8 @@ public final class ArrowFightPlugin extends JavaPlugin {
         pluginManager.registerEvents(new BreakBlock(), this);
         pluginManager.registerEvents(new BlockExplode(), this);
         pluginManager.registerEvents(new PlayerReSpawn(), this);
+        pluginManager.registerEvents(new PlayerInteract(), this);
+        pluginManager.registerEvents(new PlayerDropItem(), this);
         ArrowFightCommand arrowFightCommand = new ArrowFightCommand();
         af.setExecutor(arrowFightCommand);
         af.setTabCompleter(arrowFightCommand);
