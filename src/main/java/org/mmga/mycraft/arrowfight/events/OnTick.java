@@ -48,10 +48,6 @@ public class OnTick extends BukkitRunnable {
                     //gameObject.sendToAll(ChatColor.RED + "tick:" + GameObject.tick, Sound.BLOCK_NOTE_BLOCK_BIT);
                     World copyWorld = gameObject.getCopyWorld();
                     Collection<Arrow> entitiesByClass = copyWorld.getEntitiesByClass(Arrow.class);
-                    //死斗模式时间检测
-                    if (GameObject.tick == 1800 + (20 * 600)) {
-                        gameObject.deathMatch();
-                    }
                     for (Arrow byClass : entitiesByClass) {
                         PotionData basePotionData = byClass.getBasePotionData();
                         PotionType type = basePotionData.getType();

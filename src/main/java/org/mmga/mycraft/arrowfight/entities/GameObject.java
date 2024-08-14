@@ -46,10 +46,10 @@ public class GameObject {
     private final Map<Player, GameTeam> teamPlayers = new HashMap<>();
     private final World copyWorld;
     private final MapObject mapObject;
-    public static int tick;
+    public int tick;
     private int beforeRemove = 100;
     private boolean done = false;
-    private static boolean isStart;
+    private boolean isStart;
     private final Scoreboard scoreboard;
     private final ItemStack leaveGame;
 
@@ -340,6 +340,9 @@ public class GameObject {
             for (Player player : players) {
                 this.leave(player);
             }
+        }
+        if (this.tick == 1800 + (20 * 600)) {
+            this.deathMatch();
         }
     }
 
