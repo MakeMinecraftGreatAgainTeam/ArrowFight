@@ -13,7 +13,6 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
 import org.mmga.mycraft.arrowfight.entities.MapObject;
 
-import java.rmi.MarshalException;
 import java.util.Random;
 
 /**
@@ -37,12 +36,12 @@ public class BreakBlock implements Listener {
                     Item entity = (Item) world.spawnEntity(location, EntityType.DROPPED_ITEM);
                     entity.setItemStack(new ItemStack(Material.IRON_INGOT, new Random().nextInt(4) + 1));
                 }
-                if (Material.COAL.equals(type)){
+                if (Material.COAL_ORE.equals(type)){
                     event.setDropItems(false);
                     Location location = block.getLocation();
                     World world = location.getWorld();
                     Item entity = (Item) world.spawnEntity(location, EntityType.DROPPED_ITEM);
-                    entity.setItemStack(new ItemStack(Material.COAL, new Random().nextInt(6) + 1));
+                    entity.setItemStack(new ItemStack(Material.COAL, new Random().nextInt(6) + 3));
                 }
                 if (Material.GOLD_ORE.equals(type)) {
                     event.setDropItems(false);
