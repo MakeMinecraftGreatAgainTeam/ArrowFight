@@ -47,6 +47,7 @@ public class VillagerUtils {
         addItem(FIRE_RESISTANCE, true, false, 1, RED + "火焰箭矢", COAL_BLOCK, 1, RED + "会在射到的地方生成火焰");
         addItem(FIRE_RESISTANCE, 1, RED + "岩浆箭矢", LAVA_BUCKET, 1, RED + "会在射到的地方生成岩浆");
         addItem(LUCK, 3, RED + "世界吞噬者", COBBLESTONE, 10, RED + "所到之处，寸草不留");
+        addItem(INSTANT_DAMAGE, 1, RED + "飞星", DIAMOND, 6, RED + "对狙吗？我用小行星", GREEN + "在箭矢落地位置上方，生成一个竖直降落、速度较快、具有较大爆炸威力和范围的火球");
         addItem(SLOW_FALLING, 1, "箭雨箭矢", IRON_BLOCK, 1, "会在射到的地方生成箭雨");
         addItem(SLOWNESS, 1, "药箭", LAPIS_LAZULI, 4, "会在射到的地方生成滞留型药水（中毒）");
         addItem(SLOW_FALLING, true, false, 1, "⚡闪电⚡箭", GOLD_INGOT, 4, "会在射到的地方生成⚡闪电⚡");

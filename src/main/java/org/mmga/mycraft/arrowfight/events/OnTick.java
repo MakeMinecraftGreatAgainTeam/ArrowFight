@@ -1,5 +1,6 @@
 package org.mmga.mycraft.arrowfight.events;
 
+import com.mysql.cj.x.protobuf.MysqlxCrud;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Block;
@@ -7,11 +8,14 @@ import org.bukkit.entity.*;
 import org.bukkit.potion.*;
 import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Vector;
 import org.mmga.mycraft.arrowfight.ArrowFightPlugin;
 import org.mmga.mycraft.arrowfight.entities.GameObject;
 import org.mmga.mycraft.arrowfight.entities.MapObject;
 import org.mmga.mycraft.arrowfight.runnable.ArrowRain;
 import org.mmga.mycraft.arrowfight.entities.GameObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -27,6 +31,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public class OnTick extends BukkitRunnable {
     private static final int TICK_SEC = 20;
+    private static final Logger log = LoggerFactory.getLogger(OnTick.class);
     int tick = 0;
 
     public static void replaceAir(Material block, Location location) {
@@ -80,6 +85,21 @@ public class OnTick extends BukkitRunnable {
                             }
                             boolean onGround = byClass.isOnGround();
                             if (onGround) {
+                                byClass.remove();
+                            }
+                        }
+                        if (PotionType.INSTANT_DAMAGE.equals(type)) {
+                            if (byClass.isOnGround()) {
+                                Location fireballLocation = new Location(world, arrowLocation.getX(), 170, arrowLocation.getZ());
+                                Fireball fireball = world.spawn(fireballLocation, Fireball.class);
+                                // 设置火球的速度、方向和爆炸威力
+                                Vector velocity = new Vector(0, -1, 0);
+                                Vector direction = new Vector(0, -1, 0);
+                                double speed = 3;
+                                fireball.setDirection(direction.multiply(speed));
+                                fireball.setYield(8.0f);
+                                fireball.setVelocity(velocity.multiply(speed));
+                                log.info(direction.toString());
                                 byClass.remove();
                             }
                         }
