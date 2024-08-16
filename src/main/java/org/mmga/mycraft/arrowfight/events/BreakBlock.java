@@ -48,7 +48,7 @@ public class BreakBlock implements Listener {
                     Location location = block.getLocation();
                     World world = location.getWorld();
                     Item entity = (Item) world.spawnEntity(location, EntityType.DROPPED_ITEM);
-                    entity.setItemStack(new ItemStack(Material.GOLD_INGOT, new Random().nextInt(2) + 1));
+                    entity.setItemStack(new ItemStack(Material.GOLD_INGOT, new Random().nextInt(3) + 1));
                 }
             }
         }
