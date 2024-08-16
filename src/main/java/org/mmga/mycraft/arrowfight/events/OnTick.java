@@ -9,13 +9,13 @@ import org.bukkit.potion.*;
 import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.mmga.mycraft.arrowfight.ArrowFightPlugin;
 import org.mmga.mycraft.arrowfight.entities.GameObject;
 import org.mmga.mycraft.arrowfight.entities.MapObject;
 import org.mmga.mycraft.arrowfight.runnable.ArrowRain;
 import org.mmga.mycraft.arrowfight.entities.GameObject;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -31,9 +31,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public class OnTick extends BukkitRunnable {
     private static final int TICK_SEC = 20;
-    private static final Logger log = LoggerFactory.getLogger(OnTick.class);
+    private final Logger log;
     int tick = 0;
-
+    public OnTick(){
+        this.log = JavaPlugin.getPlugin(ArrowFightPlugin.class).getSLF4JLogger();
+    }
     public static void replaceAir(Material block, Location location) {
         if (location.getBlock().getType().isAir()) {
             location.getBlock().setType(block);
